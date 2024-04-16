@@ -7,7 +7,6 @@ import java.util.List;
 
 public interface IUserService {
     List<UserModel> getAllUsers() throws Exception;
-    UserModel getUserById(Long id) throws Exception;
     UserModel getUserByEmail(String email) throws Exception;
     UserModel registerUser(UserModel userModel) throws Exception;
     boolean deleteUser(Long id) throws Exception;

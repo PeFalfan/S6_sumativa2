@@ -26,11 +26,6 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public UserModel getUserById(Long id) {
-        return null;
-    }
-
-    @Override
     public UserModel getUserByEmail(String email) throws Exception{
         List<UserModel> userModels = repository.findAll();
 
