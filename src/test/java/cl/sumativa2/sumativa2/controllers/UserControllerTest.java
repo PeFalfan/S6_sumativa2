@@ -6,7 +6,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import cl.sumativa2.sumativa2.models.UserModel;
 import cl.sumativa2.sumativa2.services.impl.UserServiceImpl;
