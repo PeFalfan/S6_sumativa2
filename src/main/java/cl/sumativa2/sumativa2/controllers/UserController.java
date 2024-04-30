@@ -4,14 +4,23 @@ import cl.sumativa2.sumativa2.models.LogInModel;
 import cl.sumativa2.sumativa2.models.ResponseModel;
 import cl.sumativa2.sumativa2.models.UserModel;
 import cl.sumativa2.sumativa2.services.IUserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/users")
 public class UserController {
+
+    private static final Logger log = LoggerFactory.getLogger(UserController.class);
+
     @Autowired
     private IUserService userService;
 
@@ -19,6 +28,9 @@ public class UserController {
     public ResponseModel getAllUsers() {
         try {
             ResponseModel response = new ResponseModel();
+
+            log.info("GET /users");
+            log.info("Retornando todos los usuarios");
 
             List<UserModel> userModels = userService.getAllUsers();
 
@@ -30,9 +42,21 @@ public class UserController {
                 return response;
             }
             response.setMessageResponse("Se encuentran: " + userModels.size() + " usuarios registrados");
-            response.setData(userModels);
+
+            List<EntityModel<UserModel>> userResources = userModels.stream()
+                            .map(user -> EntityModel.of(user,
+                                    WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getUserByEmail(user.getEmail())).withSelfRel())).toList();
+
+            WebMvcLinkBuilder linkTo = WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getAllUsers());
+
+            CollectionModel<EntityModel<UserModel>> resources = CollectionModel.of(userResources, linkTo.withRel("users"));
+
+
+            response.setData(resources);
             response.setError(null);
+
             return response;
+
         } catch (Exception e) {
             ResponseModel response = new ResponseModel();
             response.setError(e.toString());

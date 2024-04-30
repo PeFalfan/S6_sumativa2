@@ -31,6 +31,20 @@ public class UserModel {
     @Column(name = "address_3")
     private String dispatchAddress3;
 
+    @Override
+    public String toString() {
+        return "UserModel{" +
+                "id=" + id +
+                ", email='" + email + '\'' +
+                ", userName='" + userName + '\'' +
+                ", password='" + password + '\'' +
+                ", rol='" + rol + '\'' +
+                ", dispatchAddress1='" + dispatchAddress1 + '\'' +
+                ", dispatchAddress2='" + dispatchAddress2 + '\'' +
+                ", dispatchAddress3='" + dispatchAddress3 + '\'' +
+                '}';
+    }
+
     public UserModel(Long id, String email, String userName, String password, String rol, String dispatchAddress1, String dispatchAddress2, String dispatchAddress3) {
         this.id = id;
         this.email = email;

@@ -11,7 +11,7 @@
 	<groupId>cl.sumativa2</groupId>
 	<artifactId>sumativa2</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>war</packaging>
+	<packaging>jar</packaging>
 	<name>sumativa2</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>
@@ -61,6 +61,12 @@
 			<artifactId>osdt_core</artifactId>
 			<version>21.5.0.0</version>
 			<scope>runtime</scope>
+		</dependency>
+
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-hateoas</artifactId>
 		</dependency>
 
 	</dependencies>
