@@ -1,1 +1,4 @@
+cl\sumativa2\sumativa2\controllers\UserControllerTest.class
+cl\sumativa2\sumativa2\repository\UserRepositoryTest.class
+cl\sumativa2\sumativa2\services\UserServiceTest.class
 cl\sumativa2\sumativa2\Sumativa2ApplicationTests.class

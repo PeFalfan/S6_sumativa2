@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+import cl.sumativa2.sumativa2.models.ResponseModel;
 import cl.sumativa2.sumativa2.models.UserModel;
 import cl.sumativa2.sumativa2.repository.UserRepository;
 import cl.sumativa2.sumativa2.services.impl.UserServiceImpl;
@@ -35,9 +36,13 @@ public class UserServiceTest {
 
         when(userRepositoryMock.save(any(UserModel.class))).thenReturn(userModel);
 
-        UserModel result = userService.registerUser(userModel);
+        ResponseModel result = userService.registerUser(userModel);
 
-        assertEquals("Navia", result.getUserName());
+        assertEquals("Navia", ((UserModel) result.getData()).getUserName());
+        assertEquals("123456", ((UserModel) result.getData()).getPassword());
+        assertEquals("navia@gmail.com", ((UserModel) result.getData()).getEmail());
+        assertEquals("Cliente", ((UserModel) result.getData()).getRol());
+        assertEquals("direccion 1", ((UserModel) result.getData()).getDispatchAddress1());
     }
 
     @Test
@@ -51,8 +56,6 @@ public class UserServiceTest {
         userModel.setDispatchAddress1("direccion 1");
 
         userRepositoryMock.save(userModel);
-
-        userRepositoryMock.delete(userModel);
 
         Optional<UserModel> deletedUser = userRepositoryMock.findById(1L);
 

@@ -1,6 +1,7 @@
 package cl.sumativa2.sumativa2.services.impl;
 
 import cl.sumativa2.sumativa2.models.LogInModel;
+import cl.sumativa2.sumativa2.models.ResponseModel;
 import cl.sumativa2.sumativa2.models.UserModel;
 import cl.sumativa2.sumativa2.repository.UserRepository;
 import cl.sumativa2.sumativa2.services.IUserService;
@@ -38,16 +39,38 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public UserModel registerUser(UserModel userModel) throws Exception{
-        List<UserModel> userModels = repository.findAll();
+    public ResponseModel registerUser(UserModel userModel){
+        try {
+            ResponseModel response = new ResponseModel();
 
-        for(UserModel u : userModels) {
-            if(u.getEmail().equals(userModel.getEmail())) {
-                throw new Exception("Email ya registrado");
+            List<UserModel> userModels = repository.findAll();
+
+            for(UserModel u : userModels) {
+                if(u.getEmail().equals(userModel.getEmail())) {
+                    response.setMessageResponse("error al registrar al usuario");
+                    response.setData(null);
+                    response.setError("Email ya registrado");
+
+                    return response;
+                }
             }
-        }
 
-        return repository.save(userModel);
+            UserModel savedUser = repository.save(userModel);
+
+            response.setData(savedUser);
+            response.setError(null);
+            response.setMessageResponse("Usuario: " + savedUser.getUserName() + " registrado exitosamente");
+
+            return response;
+
+        } catch (Exception e) {
+            ResponseModel response = new ResponseModel();
+            response.setData(null);
+            response.setError(e.getMessage());
+            response.setMessageResponse("error al registrar al usuario");
+
+            return response;
+        }
     }
 
     @Override

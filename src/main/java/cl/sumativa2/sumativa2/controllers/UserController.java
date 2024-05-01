@@ -13,7 +13,6 @@ import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/users")
@@ -69,23 +68,19 @@ public class UserController {
 
     @PutMapping(value = "/registerUser")
     public ResponseModel registerUser(@RequestBody UserModel userModel) {
-        try {
-            ResponseModel response = new ResponseModel();
-            UserModel registeredUserModel = userService.registerUser(userModel);
 
-            response.setData(registeredUserModel);
-            response.setError(null);
-            response.setMessageResponse("Usuario " + "registrado exitosamente");
+        log.info("PUT /users/registerUser");
+        log.info("Registrando al usuario");
+        ResponseModel response = userService.registerUser(userModel);
 
-            return response;
-        }catch (Exception e){
-            ResponseModel response = new ResponseModel();
-            response.setData(null);
-            response.setError(e.getMessage());
-            response.setMessageResponse("error al registrar al usuario");
+        if (response.getData() != null){
+            EntityModel<UserModel> userResource = EntityModel.of(((UserModel) response.getData()),
+                    WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getUserByEmail(((UserModel) response.getData()).getEmail())).withSelfRel());
 
-            return response;
+            response.setData(userResource);
         }
+
+        return response;
     }
 
     @GetMapping(value = "/getUserByEmail{email}")
