@@ -29,12 +29,15 @@ public class UserRepositoryTest {
 
         assertNotNull(savedUser.getId());
         assertEquals("Navia", savedUser.getUserName());
+        assertEquals("123456", savedUser.getPassword());
+        assertEquals("navia@gmail.com", savedUser.getEmail());
 
     }
 
     @Test
     public void deleteUserTest() {
         UserModel user = new UserModel();
+        user.setId(1L);
         user.setUserName("Navia");
         user.setPassword("123456");
         user.setEmail("navia@gmail.com");
@@ -43,7 +46,7 @@ public class UserRepositoryTest {
 
         UserModel savedUser = userRepository.save(user);
 
-        userRepository.delete(user);
+        userRepository.delete(savedUser);
 
         Optional<UserModel> deletedUser = userRepository.findById(1L);
 

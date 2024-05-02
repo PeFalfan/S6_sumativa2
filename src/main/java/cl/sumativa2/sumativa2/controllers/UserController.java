@@ -13,7 +13,6 @@ import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/users")
@@ -24,149 +23,109 @@ public class UserController {
     @Autowired
     private IUserService userService;
 
+    
     @GetMapping
     public ResponseModel getAllUsers() {
-        try {
-            ResponseModel response = new ResponseModel();
 
-            log.info("GET /users");
-            log.info("Retornando todos los usuarios");
+        log.info("GET /users");
+        log.info("Retornando todos los usuarios");
 
-            List<UserModel> userModels = userService.getAllUsers();
+        ResponseModel responseModel = userService.getAllUsers();
 
-            if (userModels == null || userModels.isEmpty()) {
-                response.setMessageResponse("No se encontraron usuarios registrados");
-                response.setData(null);
-                response.setError(null);
-
-                return response;
-            }
-            response.setMessageResponse("Se encuentran: " + userModels.size() + " usuarios registrados");
-
-            List<EntityModel<UserModel>> userResources = userModels.stream()
-                            .map(user -> EntityModel.of(user,
-                                    WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getUserByEmail(user.getEmail())).withSelfRel())).toList();
+        if (responseModel.getData() != null) {
+            // At this point, the unchecked cast warning is avoided because the element can only return this
+            // class (List<UserModel>) or null, and the latter is being controlled
+            @SuppressWarnings({"unchecked"})
+            List<EntityModel<UserModel>> userResources = ((List<UserModel>) responseModel.getData()).stream()
+                    .map(user -> EntityModel.of(user,
+                            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(this.getClass())
+                                    .getUserByEmail(user.getEmail())).withSelfRel())).toList();
 
             WebMvcLinkBuilder linkTo = WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getAllUsers());
 
-            CollectionModel<EntityModel<UserModel>> resources = CollectionModel.of(userResources, linkTo.withRel("users"));
+            CollectionModel<EntityModel<UserModel>> resources =
+                    CollectionModel.of(userResources, linkTo.withRel("users"));
 
-
-            response.setData(resources);
-            response.setError(null);
-
-            return response;
-
-        } catch (Exception e) {
-            ResponseModel response = new ResponseModel();
-            response.setError(e.toString());
-            response.setData(null);
-            response.setMessageResponse(e.getMessage());
-
-            return response;
+            responseModel.setData(resources);
+            responseModel.setError(null);
         }
+
+        return responseModel;
     }
 
     @PutMapping(value = "/registerUser")
     public ResponseModel registerUser(@RequestBody UserModel userModel) {
-        try {
-            ResponseModel response = new ResponseModel();
-            UserModel registeredUserModel = userService.registerUser(userModel);
 
-            response.setData(registeredUserModel);
-            response.setError(null);
-            response.setMessageResponse("Usuario " + "registrado exitosamente");
+        log.info("PUT /users/registerUser");
+        log.info("Registrando al usuario");
+        ResponseModel response = userService.registerUser(userModel);
 
-            return response;
-        }catch (Exception e){
-            ResponseModel response = new ResponseModel();
-            response.setData(null);
-            response.setError(e.getMessage());
-            response.setMessageResponse("error al registrar al usuario");
+        if (response.getData() != null){
+            EntityModel<UserModel> userResource = EntityModel.of(((UserModel) response.getData()),
+                    WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(this.getClass())
+                            .getUserByEmail(((UserModel) response.getData()).getEmail())).withSelfRel());
 
-            return response;
+            response.setData(userResource);
         }
+
+        return response;
     }
 
     @GetMapping(value = "/getUserByEmail{email}")
     public ResponseModel getUserByEmail(@RequestParam(value = "email") String email) {
-        try {
-            ResponseModel response = new ResponseModel();
 
-            UserModel userModel = userService.getUserByEmail(email);
-            response.setData(userModel);
-            response.setError(null);
-            response.setMessageResponse("Usuario " + userModel.getUserName()+ " cargado exitosamente");
-            return response;
-        } catch (Exception e) {
-            ResponseModel response = new ResponseModel();
-            response.setData(null);
-            response.setError(e.getMessage());
-            response.setMessageResponse("error al obtener el usuario");
-            return response;
+        log.info("GET /users/getUserByEmail{email}");
+        log.info("Obteniendo usuario por correo");
+
+        ResponseModel response = userService.getUserByEmail(email);
+        
+        if (response.getData() != null){
+            EntityModel<UserModel> userResource = EntityModel.of(((UserModel) response.getData()),
+                    WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(this.getClass())
+                            .getUserByEmail(((UserModel) response.getData()).getEmail())).withSelfRel());
+            response.setData(userResource);
         }
+        return response;
     }
 
     @DeleteMapping(value = "/deleteUserById{id}")
     public ResponseModel deleteUserById(@RequestParam(value = "id") Long id) {
-        try {
-            ResponseModel response = new ResponseModel();
-            boolean result = userService.deleteUser(id);
-            response.setData(result);
-            response.setError(null);
-            response.setMessageResponse("Usuario eliminado correctamente");
 
-            return response;
+        log.info("GET /users/deleteUserById{id}");
+        log.info("Eliminando usuario por id");
 
-        }catch (Exception e) {
-            ResponseModel response = new ResponseModel();
-            response.setData(null);
-            response.setError(e.getMessage());
-            response.setMessageResponse("Error al eliminar el usuario");
-
-            return response;
-        }
+        return userService.deleteUser(id);
     }
 
     @PutMapping(value = "/updateUser{id}")
     public ResponseModel updateUser(@RequestParam(value = "id") Long id, @RequestBody UserModel userModel) {
-        try {
-            ResponseModel response = new ResponseModel();
+        log.info("PUT /users/updateUser{id}");
+        log.info("Actualizando usuario por id");
 
-            UserModel updatedUserModel = userService.updateUser(id, userModel);
-            response.setData(updatedUserModel);
-            response.setError(null);
-            response.setMessageResponse("Usuario actualizado correctamente");
+        ResponseModel resp = userService.updateUser(id, userModel);
 
-            return response;
-
-        }catch (Exception e){
-            ResponseModel response = new ResponseModel();
-            response.setData(null);
-            response.setError(e.getMessage());
-            response.setMessageResponse("Error al actualizar el usuario");
-
-            return response;
+        if (resp.getData() != null) {
+            EntityModel<UserModel> userResource = EntityModel.of(((UserModel) resp.getData()),
+                    WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(this.getClass())
+                            .getUserByEmail(((UserModel) resp.getData()).getEmail())).withSelfRel());
+            resp.setData(userResource);
         }
+        return resp;
     }
 
     @PostMapping(value = "/logIn")
     public ResponseModel logIn(@RequestBody LogInModel logIntent) {
-        try {
-            ResponseModel response = new ResponseModel();
-            boolean result = userService.loginUser(logIntent);
-            response.setData(result);
-            response.setError(null);
-            response.setMessageResponse("Credenciales validadas correctamente");
+        log.info("POST /users/logIn");
+        log.info("Validando usuario y contraseña");
 
-            return response;
+        ResponseModel resp = userService.loginUser(logIntent);
 
-        }catch (Exception e) {
-            ResponseModel response = new ResponseModel();
-            response.setData(null);
-            response.setError(e.getMessage());
-            response.setMessageResponse("Error al ingresar");
-            return response;
+        if (resp.getData() != null) {
+            EntityModel<UserModel> userResource = EntityModel.of(((UserModel) resp.getData()),
+                    WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(this.getClass())
+                            .getUserByEmail(((UserModel) resp.getData()).getEmail())).withSelfRel());
+            resp.setData(userResource);
         }
+        return resp;
     }
 }
