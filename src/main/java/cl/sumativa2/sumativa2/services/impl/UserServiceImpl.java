@@ -17,25 +17,62 @@ public class UserServiceImpl implements IUserService {
     private UserRepository repository;
 
     @Override
-    public List<UserModel> getAllUsers() throws Exception {
-        List<UserModel> userModels = repository.findAll();
+    public ResponseModel getAllUsers() {
+        try {
+            ResponseModel response = new ResponseModel();
 
-        if (userModels.isEmpty()) {
-            throw new Exception("No se encuentran usuarios registrados");
+            List<UserModel> userModels = repository.findAll();
+
+            if (userModels.isEmpty()) {
+                response.setMessageResponse("No se encontraron usuarios registrados");
+                response.setData(null);
+                response.setError(null);
+
+                return response;
+            }
+
+            response.setMessageResponse("Se encuentran: " + userModels.size() + " usuarios registrados");
+            response.setData(userModels);
+            response.setError(null);
+
+            return response;
+
+        } catch (Exception e){
+            ResponseModel response = new ResponseModel();
+            response.setError(e.toString());
+            response.setData(null);
+            response.setMessageResponse(e.getMessage());
+
+            return response;
         }
-        return repository.findAll();
     }
 
     @Override
-    public UserModel getUserByEmail(String email) throws Exception{
-        List<UserModel> userModels = repository.findAll();
+    public ResponseModel getUserByEmail(String email){
+        try {
+            ResponseModel response = new ResponseModel();
+            List<UserModel> userModels = repository.findAll();
 
-        for (UserModel userModel : userModels) {
-            if (userModel.getEmail().equals(email)) {
-                return userModel;
+            for (UserModel userModel : userModels) {
+                if (userModel.getEmail().equals(email)) {
+                    response.setData(userModel);
+                    response.setError(null);
+                    response.setMessageResponse("Usuario encontrado");
+                    return response;
+                }
             }
+            response.setMessageResponse("No se encontraron usuarios registrados");
+            response.setData(null);
+            response.setError("No existe el usuario con email " + email);
+
+            return response;
+        } catch (Exception e){
+            ResponseModel response = new ResponseModel();
+            response.setError(e.toString());
+            response.setData(null);
+            response.setMessageResponse(e.getMessage());
+            return response;
         }
-        throw new Exception("No existe el usuario con email " + email);
     }
 
     @Override
@@ -74,42 +111,98 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public boolean deleteUser(Long id) throws Exception{
+    public ResponseModel deleteUser(Long id){
+        try {
+            ResponseModel response = new ResponseModel();
 
-        List<UserModel> userModels = repository.findAll();
+            List<UserModel> userModels = repository.findAll();
 
-        for(UserModel u : userModels) {
-            if(u.getId().equals(id)) {
-                repository.delete(u);
-                return true;
-            }
-        }
-
-        throw new Exception("No existe el usuario con id " + id);
-    }
-
-    @Override
-    public UserModel updateUser(Long id, UserModel userModel) throws Exception{
-        if(repository.existsById(id)) {
-            userModel.setId(id);
-            return repository.save(userModel);
-        }
-        throw new Exception("No existe el usuario con id " + id);
-    }
-
-    @Override
-    public boolean loginUser(LogInModel logIn) throws Exception {
-        List<UserModel> userModels = repository.findAll();
-
-        for (UserModel userModel : userModels) {
-            if(userModel.getEmail().equals(logIn.getEmail())) {
-                if(userModel.getPassword().equals(logIn.getPassword())) {
-                    return true;
+            for(UserModel u : userModels) {
+                if(u.getId().equals(id)) {
+                    repository.delete(u);
+                    response.setData(true);
+                    response.setError(null);
+                    response.setMessageResponse("Usuario eliminado");
+                    return response;
                 }
-                throw new Exception("Contraseña incorrecta");
             }
+
+            response.setMessageResponse("Error al eliminar el usuario");
+            response.setData(null);
+            response.setError("No existe el usuario con id " + id);
+
+            return response;
+
+        } catch (Exception e) {
+            ResponseModel response = new ResponseModel();
+            response.setError(e.toString());
+            response.setData(null);
+            response.setMessageResponse(e.getMessage());
+            return response;
         }
-        throw new Exception("Credenciales Incorrectas");
+    }
+
+    @Override
+    public ResponseModel updateUser(Long id, UserModel userModel){
+        try {
+            ResponseModel response = new ResponseModel();
+
+            if(repository.existsById(id)) {
+                userModel.setId(id);
+                response.setData(repository.save(userModel));
+                response.setError(null);
+                response.setMessageResponse("Usuario actualizado correctamente");
+            } else {
+                response.setMessageResponse("Error al actualizar el usuario");
+                response.setData(null);
+                response.setError("No existe el usuario con id " + id);
+            }
+
+            return response;
+        } catch (Exception e){
+            ResponseModel response = new ResponseModel();
+            response.setData(null);
+            response.setError(e.getMessage());
+            response.setMessageResponse("Error al actualizar el usuario");
+
+            return response;
+        }
+    }
+
+    @Override
+    public ResponseModel loginUser(LogInModel logIn) {
+        try {
+            ResponseModel response = new ResponseModel();
+
+            List<UserModel> userModels = repository.findAll();
+
+            for (UserModel userModel : userModels) {
+                if(userModel.getEmail().equals(logIn.getEmail())) {
+                    if(userModel.getPassword().equals(logIn.getPassword())) {
+                        response.setData(userModel);
+                        response.setError(null);
+                        response.setMessageResponse("Credenciales validadas correctamente");
+
+                        return response;
+                    }
+                    response.setData(null);
+                    response.setError("Contraseña incorrecta");
+                    response.setMessageResponse("Error al ingresar");
+                    return response;
+                }
+            }
+            response.setData(null);
+            response.setError("Credenciales Incorrectas");
+            response.setMessageResponse("Error al ingresar");
+            return response;
+
+        }catch (Exception e) {
+            ResponseModel response = new ResponseModel();
+            response.setData(null);
+            response.setError(e.getMessage());
+            response.setMessageResponse("Error al ingresar");
+            return response;
+        }
     }
 
 

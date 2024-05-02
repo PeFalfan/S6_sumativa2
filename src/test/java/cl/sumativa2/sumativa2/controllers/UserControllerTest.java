@@ -47,7 +47,10 @@ public class UserControllerTest {
 
         List<UserModel> users = List.of(user1, user2);
 
-        when(userServiceMock.getAllUsers()).thenReturn(users);
+        ResponseModel mockResponse = new ResponseModel();
+        mockResponse.setData(users);
+
+        when(userServiceMock.getAllUsers()).thenReturn(mockResponse);
 
         mockMvc.perform(get("/users"))
                 .andExpect(status().isOk())
@@ -60,39 +63,21 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.data.content[0].dispatchAddress1").value("direccion 1"));
     }
 
-//    @Test
-//    public void registerUserTest() throws Exception {
-//        UserModel user = new UserModel();
-//        user.setEmail("john@doe.com");
-//        user.setUserName("John");
-//        user.setPassword("1234");
-//        user.setRol("cliente");
-//        user.setDispatchAddress1("direccion 1");
-//
-//        EntityModel<UserModel> userResource = EntityModel.of(user);
-//
-//        when(userServiceMock.registerUser(user)).thenReturn(new ResponseModel());
-//
-//        String body = (new ObjectMapper()).valueToTree(user).toString();
-//
-//        mockMvc.perform(put("/users/registerUser").content(body).contentType("application/json"))
-//                .andExpect(status().isOk());
-////                .andExpect(jsonPath("$.messageResponse").value("Usuario registrado exitosamente"));
-//    }
-
     @Test
     public void getUserByEmailTest() throws Exception {
         UserModel user1 = new UserModel();
-        user1.setId(1L);
         user1.setEmail("john@doe.com");
         user1.setUserName("John");
         user1.setPassword("1234");
         user1.setRol("cliente");
         user1.setDispatchAddress1("direccion 1");
 
-        EntityModel<UserModel> userResource = EntityModel.of(user1);
+        userServiceMock.registerUser(user1);
 
-        when(userServiceMock.getUserByEmail("john@doe.com")).thenReturn(user1);
+        ResponseModel response = new ResponseModel();
+        response.setData(user1);
+
+        when(userServiceMock.getUserByEmail("john@doe.com")).thenReturn(response);
 
         mockMvc.perform(get("/users/getUserByEmail?email=john@doe.com"))
                 .andExpect(status().isOk())
